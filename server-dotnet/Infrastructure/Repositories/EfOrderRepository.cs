@@ -25,6 +25,16 @@ public sealed class EfOrderRepository(AppDbContext db) : IOrderRepository
     }
 
     /// <inheritdoc/>
+    public async Task<IReadOnlyList<Order>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        var items = await _db.Orders.AsNoTracking()
+            .Include(o => o.Items)
+            .OrderByDescending(o => o.CreatedAtUtc)
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
+        return items.Select(o => o.ToDomain()).ToList();
+    }
+
+    /// <inheritdoc/>
     public async Task<IReadOnlyList<Order>> GetByUserAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         var items = await _db.Orders.AsNoTracking()

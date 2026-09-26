@@ -21,6 +21,13 @@ public interface IOrderService
     Task<Order> CheckoutAsync(Guid userId, string username, IReadOnlyList<CheckoutItemDto> items, string? zoneId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets every order asynchronously (admin).
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>All orders, newest first.</returns>
+    Task<IReadOnlyList<Order>> GetAllAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Gets the order history of a user asynchronously.
     /// </summary>
     /// <param name="userId">The buying user identifier.</param>

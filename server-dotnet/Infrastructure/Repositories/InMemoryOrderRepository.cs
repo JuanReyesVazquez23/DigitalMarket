@@ -22,6 +22,16 @@ public sealed class InMemoryOrderRepository : IOrderRepository
     }
 
     /// <inheritdoc/>
+    public Task<IReadOnlyList<Order>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        IReadOnlyList<Order> result = _store.Values
+            .OrderByDescending(o => o.CreatedAtUtc)
+            .ToList();
+        return Task.FromResult(result);
+    }
+
+    /// <inheritdoc/>
     public Task<IReadOnlyList<Order>> GetByUserAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();

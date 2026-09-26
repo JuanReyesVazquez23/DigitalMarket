@@ -16,6 +16,10 @@
 .admin-row .meta { flex: 1; min-width: 0; }
 .admin-row .meta strong { font-size: 0.92rem; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .admin-actions { display: flex; gap: 8px; flex: none; }
+.admin-orders { margin-top: 22px; border-top: 1px solid var(--line-soft); padding-top: 18px; display: grid; gap: 8px; }
+.admin-orders-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.admin-orders-head h3 { font-size: 1.05rem; }
+.order-buyer { color: var(--red-ink); font-weight: 700; }
 .unlock-shake { animation: shake 0.3s; }
 @keyframes shake { 25% { transform: translateX(-3px); } 50% { transform: translateX(3px); } 75% { transform: translateX(-2px); } }
 @media (max-width: 560px) {

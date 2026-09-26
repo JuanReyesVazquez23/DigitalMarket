@@ -79,6 +79,10 @@ public sealed class OrderService(IOrderRepository orders, IProductRepository pro
     }
 
     /// <inheritdoc/>
+    public Task<IReadOnlyList<Order>> GetAllAsync(CancellationToken cancellationToken = default)
+        => _orders.GetAllAsync(cancellationToken);
+
+    /// <inheritdoc/>
     public Task<IReadOnlyList<Order>> GetMineAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         if (userId == Guid.Empty)

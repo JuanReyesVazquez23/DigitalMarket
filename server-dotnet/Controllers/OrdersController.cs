@@ -57,6 +57,21 @@ public sealed class OrdersController(IOrderService orders) : ControllerBase
     }
 
     /// <summary>
+    /// Gets every order with buyer info (admin only).
+    /// </summary>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>All orders, newest first.</returns>
+    [HttpGet]
+    [Authorize(Roles = "admin")]
+    [ProducesResponseType(typeof(IReadOnlyList<Order>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<IReadOnlyList<Order>>> GetAll(CancellationToken ct)
+    {
+        return Ok(await _orders.GetAllAsync(ct).ConfigureAwait(false));
+    }
+
+    /// <summary>
     /// Gets the order history of the logged-in user.
     /// </summary>
     /// <param name="ct">The cancellation token.</param>

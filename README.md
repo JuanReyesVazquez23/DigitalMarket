@@ -2,7 +2,7 @@
 
 # 🎮 DigitalGaming
 
-**Tienda gamer dominicana — consolas, videojuegos, PC, monitores y accesorios.**
+**Dominican gaming store — consoles, videogames, PC, monitors & accessories.**
 
 [![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -10,47 +10,47 @@
 [![Postgres](https://img.shields.io/badge/Neon_Postgres-336791?logo=postgresql&logoColor=white)](https://neon.tech/)
 [![Vercel](https://img.shields.io/badge/Vercel-deploy-black?logo=vercel)](https://vercel.com/)
 
-Precios en **RD$** · Envíos a todo el país · Preventa GTA VI con countdown
+Prices in **RD$** · Shipping across the country · GTA VI preorder with countdown
 
 </div>
 
 ---
 
-## ✨ Qué hace
+## ✨ Features
 
-- 🛍️ Catálogo paginado (offset/limit) con caché CDN, filtros y **búsqueda tolerante** (perdona tildes: `audifono` → *Audífono*)
-- 🛒 Carrito con **stock en vivo**, zonas de envío (SD / Interior / recoger) y checkout con login
-- 🔐 Auth con JWT corto (15 min) + **refresh tokens rotativos**, rate limiting y logout en todos lados
-- 📦 Historial de compras + confirmación por **WhatsApp**
-- 🛠️ Modo admin oculto (10 toques al título): crear/editar/eliminar, productos ocultos, upload de imágenes a Storage
-- 🎬 Anuncio de preventa **GTA VI** con cuenta regresiva al 19-nov-2026
+- 🛍️ Paginated catalog (offset/limit) with CDN cache, filters and **tolerant search** (forgiving with accents: `audifono` → *Audífono*)
+- 🛒 Cart with **live stock**, shipping zones (SD / Interior / pickup) and checkout with login
+- 🔐 Auth with short JWT (15 min) + **rotating refresh tokens**, rate limiting and logout everywhere
+- 📦 Order history + **WhatsApp** confirmation
+- 🛠️ Hidden admin mode (10 taps on the title): create/edit/delete, hidden products, image upload to Storage
+- 🎬 **GTA VI** preorder banner with countdown to Nov 19, 2026
 
 ## 🧱 Stack
 
-| Capa | Tecnología |
+| Layer | Technology |
 |---|---|
-| Frontend | HTML + CSS por capas (`@layer`) + TypeScript compilado con `tsc` |
-| API producción | Vercel Functions Node + TS (`pg`, `jsonwebtoken`, `@vercel/blob`, `formidable`) |
-| API local/dev | ASP.NET Core 10 + C# (mismos contratos) |
-| Datos | Neon Postgres (EF Core + migraciones) o memoria en local |
-| Imágenes | Vercel Blob (base64 local como fallback) |
-| Deploy | Vercel (frontend + functions). El C# **no** se despliega: es laboratorio local |
+| Frontend | HTML + layered CSS (`@layer`) + TypeScript compiled with `tsc` |
+| Production API | Vercel Node Functions + TS (`pg`, `jsonwebtoken`, `@vercel/blob`, `formidable`) |
+| Local/dev API | ASP.NET Core 10 + C# (same contracts) |
+| Data | Neon Postgres (EF Core + migrations) or in-memory locally |
+| Images | Vercel Blob (local base64 as fallback) |
+| Deploy | Vercel (frontend + functions). C# is **not** deployed: local lab only |
 
-## 🏛️ Arquitectura
+## 🏛️ Architecture
 
-**Capas estrictas** en los 3 lenguajes (`Core → Application → Infrastructure → Api`, `domain → data → services → ui`, `base → layout → components → pages → themes`) y **hexagonal ligera**: el dominio no conoce ni EF ni `pg`; los repositorios son adaptadores intercambiables por variable de entorno.
+**Strict layers** in all 3 languages (`Core → Application → Infrastructure → Api`, `domain → data → services → ui`, `base → layout → components → pages → themes`) and **light hexagonal**: the domain knows neither EF nor `pg`; repositories are adapters swapped via environment variable.
 
 ```mermaid
 flowchart LR
-    subgraph Driving["Puertos primarios (usan la app)"]
+    subgraph Driving["Primary ports (drive the app)"]
         A[C# Controllers<br/>local]
-        B[Functions Node<br/>Vercel]
-        C[Frontend TS]
+        B[Node Functions<br/>Vercel]
+        C[TS Frontend]
     end
-    subgraph Core["Núcleo"]
-        D(Dominio + casos de uso)
+    subgraph Core["Core"]
+        D(Domain + use cases)
     end
-    subgraph Driven["Puertos secundarios (la app los usa)"]
+    subgraph Driven["Secondary ports (driven by the app)"]
         E[(EF Core / InMemory)]
         F[(Neon Postgres)]
         G[JWT + PBKDF2]
@@ -66,69 +66,69 @@ flowchart LR
 ```mermaid
 flowchart TD
     V[Vercel<br/>frontend + api/*] -->|POSTGRES_URL<br/>JWT_KEY| N[(Neon Postgres)]
-    U[Usuario] --> V
+    U[User] --> V
 ```
 
-## 📁 Estructura (qué es cada cosa)
+## 📁 Structure (what each thing is)
 
 ```
-├── api/                  🚀 PRODUCCIÓN — Functions Node+TS (Vercel). Lo único que corre en la nube.
-├── wwwroot/              🖥️ Frontend compartido (lo sirven Vercel y el C# local).
-│   ├── ts/               Fuente real (se compila con tsc, no se edita el js a mano)
-│   └── js/               Generado (ignorado en git, salvo config.js)
-├── db/                   schema.sql + seed.sql para Neon (SQL Editor)
-├── server-dotnet/        🧪 LOCAL — API C# para desarrollar/probar (dotnet run).
-│                         NO se despliega. Genera las migraciones (dotnet-ef).
-├── scripts/              build de Vercel (genera js/config.js desde API_URL)
-├── vercel.json           Deploy estático + headers inmutables
-└── package.json          Deps Node + scripts npm
+├── api/                  🚀 PRODUCTION — Node+TS Functions (Vercel). The only thing running in the cloud.
+├── wwwroot/              🖥️ Shared frontend (served by both Vercel and local C#).
+│   ├── ts/               Real source (compiled with tsc, never edit js by hand)
+│   └── js/               Generated (git-ignored, except config.js)
+├── db/                   schema.sql + seed.sql for Neon (SQL Editor)
+├── server-dotnet/        🧪 LOCAL — C# API for developing/testing (dotnet run).
+│                         NOT deployed. Generates migrations (dotnet-ef).
+├── scripts/              Vercel build (generates js/config.js from API_URL)
+├── vercel.json           Static deploy + immutable headers
+└── package.json          Node deps + npm scripts
 ```
 
-> **Regla de oro**: `api/` = producción real · `server-dotnet/` = laboratorio local. Mismas rutas, mismas reglas.
+> **Golden rule**: `api/` = real production · `server-dotnet/` = local lab. Same routes, same rules.
 
-## 🚀 Inicio rápido (local)
+## 🚀 Quickstart (local)
 
-Requisitos: [.NET 10 SDK](https://dotnet.microsoft.com/download) y [Node 22+](https://nodejs.org/).
+Requirements: [.NET 10 SDK](https://dotnet.microsoft.com/download) and [Node 22+](https://nodejs.org/).
 
 ```powershell
-# 1. Frontend (una vez, o npx tsc --watch mientras desarrollas)
+# 1. Frontend (once, or npx tsc --watch while developing)
 npm install
 npm run build
 
-# 2. API + tienda (datos en memoria)
+# 2. API + store (in-memory data)
 dotnet run --project server-dotnet/DigitalGaming.csproj
 # → http://localhost:5127
 ```
 
-- Cuenta demo: `admin` / `Admin1234` · Admin: 10 toques al título.
-- Con `ConnectionStrings__DefaultConnection` usa Postgres en vez de memoria.
+- Demo account: `admin` / `Admin1234` · Admin: 10 taps on the title.
+- With `ConnectionStrings__DefaultConnection` it uses Postgres instead of memory.
 
 ## ☁️ Deploy (Vercel + Neon)
 
-1. Neon → SQL Editor → corre `db/schema.sql` y `db/seed.sql`.
-2. Vercel → importa el repo con env vars:
+1. Neon → SQL Editor → run `db/schema.sql` and `db/seed.sql`.
+2. Vercel → import the repo with env vars:
 
-| Variable | Valor |
+| Variable | Value |
 |---|---|
-| `POSTGRES_URL` | pooled string de Neon (`?sslmode=require`) |
-| `JWT_KEY` | clave de 64+ caracteres (nueva, no la de dev) |
-| `API_URL` | *(vacío = mismo origen)* |
-| Blob | pestaña Storage → crea un Blob store y conéctalo |
+| `POSTGRES_URL` | Neon pooled string (`?sslmode=require`) |
+| `JWT_KEY` | 64+ char key (new, not the dev one) |
+| `API_URL` | *(empty = same origin)* |
+| Blob | Storage tab → create a Blob store and connect it |
 
-3. Deploy. Verifica `/api/products` y crea una cuenta.
+3. Deploy. Verify `/api/products` and create an account.
 
-## 🧪 Verificación
+## 🧪 Verification
 
 ```powershell
-npm run typecheck        # tsc web + api, estricto
-node --import tsx/esm <test>.mjs   # harnesses (requiere npm install)
+npm run typecheck        # strict tsc, web + api
+node --import tsx/esm <test>.mjs   # harnesses (requires npm install)
 dotnet build server-dotnet/DigitalGaming.csproj
 ```
 
 ## 🗺️ Roadmap
 
-- [ ] Roles (`admin` real en escrituras)
-- [ ] Pagos (Azul/CardNet) + estados de orden
-- [ ] Tests en el repo (xUnit + Playwright)
-- [ ] Galería multi-imagen, wishlist, cupones
+- [ ] Roles (real `admin` on writes)
+- [ ] Payments (Azul/CardNet) + order states
+- [ ] Tests in the repo (xUnit + Playwright)
+- [ ] Multi-image gallery, wishlist, coupons
 - [ ] SEO + sitemap + PWA

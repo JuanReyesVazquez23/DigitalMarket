@@ -1,3 +1,4 @@
+// GET /api/orders — registro completo con quién compró (solo rol admin).
 // POST /api/orders — compra del carrito (requiere login). Transacción: valida stock,
 // crea pedido y descuenta inventario. Agrupa líneas duplicadas (anti-oversell).
 import crypto from "node:crypto";
@@ -28,8 +29,40 @@ function zoneCost(zone: string): number {
 }
 
 const handler: Handler = async (req, res) => {
+  if (req.method === "GET") {
+    const admin = getAuthUser(req);
+    if (!admin) return send(res, 401, { message: "No autorizado." });
+    if (admin.role !== "admin") return send(res, 403, { message: "Solo administradores." });
+    const pool = getPool();
+    const { rows: orders } = await pool.query(
+      `SELECT "Id","UserId","Username","Total","ShippingZone","ShippingCost","CreatedAtUtc" FROM "Orders" ORDER BY "CreatedAtUtc" DESC`
+    );
+    const out = [];
+    for (const o of orders) {
+      const { rows: items } = await pool.query(
+        `SELECT "ProductName","UnitPrice","Quantity" FROM "OrderItems" WHERE "OrderId"=$1`,
+        [String(o.Id)]
+      );
+      out.push({
+        id: String(o.Id),
+        userId: String(o.UserId),
+        username: String(o.Username),
+        total: Number(o.Total ?? 0),
+        shippingZone: String(o.ShippingZone ?? "santo-domingo"),
+        shippingCost: Number(o.ShippingCost ?? 0),
+        createdAtUtc: o.CreatedAtUtc instanceof Date ? o.CreatedAtUtc.toISOString() : String(o.CreatedAtUtc ?? ""),
+        items: items.map((i: DbRow) => ({
+          productName: String(i.ProductName ?? ""),
+          quantity: Number(i.Quantity ?? 0),
+          unitPrice: Number(i.UnitPrice ?? 0),
+        })),
+      });
+    }
+    return send(res, 200, out);
+  }
+
   if (req.method !== "POST") {
-    res.setHeader("Allow", "POST");
+    res.setHeader("Allow", "GET, POST");
     return send(res, 405, { message: "Método no permitido." });
   }
   const user = getAuthUser(req);

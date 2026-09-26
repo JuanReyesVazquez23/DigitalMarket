@@ -1,5 +1,6 @@
 // Layer: ts/app — composición (entry point). Une domain/data/services/ui.
 import { fetchPage, fetchProducts } from "./data/product-repository.js";
+import { adminOrders } from "./data/order-repository.js";
 import { addToCart, getCart } from "./services/cart-store.js";
 import { getSession } from "./services/session-store.js";
 import { renderStore } from "./ui/store-renderer.js";
@@ -86,7 +87,7 @@ const admin = setupAdmin({
 
 const tapLock = setupTapUnlock(brandTitle, tapHint, () => {
   admin.setUnlocked(true);
-  admin.renderAdminList(all);
+  void refreshAdmin();
   // Lleva al panel para que la salida sea descubrible.
   adminPanel.scrollIntoView({ behavior: "smooth", block: "start" });
 });
@@ -144,9 +145,25 @@ setupCountdown("2026-11-19T04:00:00Z");
 
 async function reload(): Promise<void> {
   all = await fetchProducts();
-  admin.renderAdminList(all);
+  await refreshAdmin();
   cart.renderCart();
   await loadPage();
+}
+
+/** Pinta el panel admin (catálogo + registro de compras si hay sesión). */
+async function refreshAdmin(): Promise<void> {
+  admin.renderAdminList(all);
+  if (!admin.isUnlocked()) {
+    admin.renderOrders([], "");
+    return;
+  }
+  try {
+    admin.renderOrders(await adminOrders(), "");
+  } catch (e) {
+    admin.renderOrders([], e instanceof Error && e.message === "FORBIDDEN"
+      ? "Solo los administradores pueden ver las compras (entra con cuenta admin)."
+      : "Entra con tu cuenta para ver el registro.");
+  }
 }
 
 /** Pide la ventana actual (offset/limit) y pinta. */

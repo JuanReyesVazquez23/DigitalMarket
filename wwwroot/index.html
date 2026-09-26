@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./css/main.css?v=20" />
+  <link rel="stylesheet" href="./css/main.css?v=21" />
   <link rel="icon" href="./assets/brand/favicon.svg" type="image/svg+xml" />
   <link rel="alternate icon" href="./assets/brand/favicon.ico" />
   <link rel="icon" href="./assets/brand/favicon-32x32.png" sizes="32x32" type="image/png" />
@@ -125,6 +125,15 @@
         </div>
       </div>
       <div id="adminList" class="admin-list"></div>
+      <div class="admin-orders">
+        <div class="admin-orders-head">
+          <h3>Registro de compras</h3>
+          <span id="ordersAdminCount" class="muted"></span>
+        </div>
+        <p class="muted">Todas las compras con quién las hizo. Solo visible para administradores.</p>
+        <div id="ordersAdminError" class="form-error" role="alert"></div>
+        <div id="ordersAdminList" class="admin-list"></div>
+      </div>
     </section>
   </main>
 
@@ -212,8 +221,8 @@
   </div>
 
   <!-- DG_API_URL: en Vercel se genera desde la env API_URL; en local es "" (mismo origen). -->
-  <script src="./js/config.js?v=20"></script>
-  <script type="module" src="./js/app.js?v=20"></script>
+  <script src="./js/config.js?v=21"></script>
+  <script type="module" src="./js/app.js?v=21"></script>
 
   <!-- Modal sesión: entrar o crear cuenta (para comprar) -->
   <div id="authBackdrop" class="modal-backdrop">

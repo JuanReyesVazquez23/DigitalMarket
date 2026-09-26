@@ -1,5 +1,6 @@
 // Layer: ts/ui/admin-controller — modal alta/edición + lista admin + preview + salida.
 import type { CreateProductDto, Product } from "../domain/models.js";
+import type { AdminOrder } from "../data/order-repository.js";
 import { createProduct, deleteProduct, updateProduct } from "../data/product-repository.js";
 import { categoryOf, normalizeImageUrl, validateNewProduct, withImageFallback } from "../services/product-service.js";
 import { toast } from "./cart-drawer.js";
@@ -16,6 +17,7 @@ const PLACEHOLDER_PREVIEW = "https://placehold.co/600x400/111111/E10600?text=Vis
 export function setupAdmin(deps: AdminDeps): {
   openModal: () => void;
   renderAdminList: (items: Product[]) => void;
+  renderOrders: (items: AdminOrder[], error: string) => void;
   setUnlocked: (v: boolean) => void;
   isUnlocked: () => boolean;
   /** Bloquea el admin y resetea los 10 toques (usado al cerrar sesión). */
@@ -305,7 +307,35 @@ export function setupAdmin(deps: AdminDeps): {
     }
   }
 
-  return { openModal: openCreate, renderAdminList, setUnlocked, isUnlocked, lock };
+  return { openModal: openCreate, renderAdminList, renderOrders, setUnlocked, isUnlocked, lock };
+}
+
+function formatOrderDate(iso: string): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleString("es-DO", { dateStyle: "medium", timeStyle: "short" });
+}
+
+function renderOrders(items: AdminOrder[], error: string): void {
+  const list = getEl("ordersAdminList");
+  const count = getEl("ordersAdminCount");
+  const errEl = getEl("ordersAdminError");
+  errEl.textContent = error;
+  list.innerHTML = "";
+  count.textContent = items.length === 0 ? "" : `${items.length} pedido(s)`;
+  for (const o of items) {
+    const card = document.createElement("div");
+    card.className = "order";
+    const lines = o.items.map((i) => `${i.quantity} × ${i.productName} — ${formatPrice(i.unitPrice * i.quantity)}`).join("\n");
+    card.innerHTML = `<div class="order-head"><strong></strong><span class="order-date"></span></div><div class="order-buyer"></div><div class="order-items"></div><div class="order-total"><span>Total</span><strong></strong></div>`;
+    (card.querySelector(".order-head strong") as HTMLElement).textContent = `Pedido #${o.id.slice(0, 8)}`;
+    (card.querySelector(".order-date") as HTMLElement).textContent = formatOrderDate(o.createdAtUtc);
+    (card.querySelector(".order-buyer") as HTMLElement).textContent = `👤 ${o.username}`;
+    (card.querySelector(".order-items") as HTMLElement).textContent = lines;
+    (card.querySelector(".order-total strong") as HTMLElement).textContent = formatPrice(o.total);
+    list.appendChild(card);
+  }
 }
 
 function getEl(id: string): HTMLElement {

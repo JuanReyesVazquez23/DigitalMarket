@@ -17,6 +17,13 @@ public interface IOrderRepository
     Task<Order> AddAsync(Order order, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets every order asynchronously (admin).
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>All orders, newest first.</returns>
+    Task<IReadOnlyList<Order>> GetAllAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Gets the orders of a user asynchronously.
     /// </summary>
     /// <param name="userId">The buying user identifier.</param>
