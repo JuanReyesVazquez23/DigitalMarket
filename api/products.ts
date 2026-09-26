@@ -1,7 +1,7 @@
 // GET /api/products?limit=&offset=&category=&q=&includeHidden= (público, cacheable en CDN)
 // POST /api/products (requiere login)
 import { getPool } from "./_db.js";
-import { categoryToInt, categoryToName, getAuthUser, send } from "./_auth.js";
+import { categoryToInt, categoryToName, getAuthUser, isAdminUser, send } from "./_auth.js";
 import type { DbRow, Handler, VercelReq } from "./_types.js";
 
 function mapRow(r: DbRow): Record<string, unknown> {
@@ -86,6 +86,7 @@ const handler: Handler = async (req, res) => {
 
   if (req.method === "POST") {
     if (!getAuthUser(req)) return send(res, 401, { message: "No autorizado." });
+    if (!isAdminUser(req)) return send(res, 403, { message: "Solo el administrador." });
     const dto = (req.body ?? {}) as Record<string, unknown>;
     const err = validate(dto);
     if (err) return send(res, 400, { message: err });

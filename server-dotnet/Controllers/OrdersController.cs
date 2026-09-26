@@ -62,7 +62,7 @@ public sealed class OrdersController(IOrderService orders) : ControllerBase
     /// <param name="ct">The cancellation token.</param>
     /// <returns>All orders, newest first.</returns>
     [HttpGet]
-    [Authorize(Roles = "admin")]
+    [Authorize(Policy = "AdminUser")]
     [ProducesResponseType(typeof(IReadOnlyList<Order>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

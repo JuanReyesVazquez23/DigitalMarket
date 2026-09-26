@@ -4,7 +4,7 @@ import { promises as fs } from "node:fs";
 import type { IncomingMessage } from "node:http";
 import { put } from "@vercel/blob";
 import formidable, { type File as FormidableFile } from "formidable";
-import { getAuthUser, send } from "./_auth.js";
+import { getAuthUser, isAdminUser, send } from "./_auth.js";
 import type { Handler } from "./_types.js";
 
 const MAX_BYTES = 4 * 1024 * 1024;
@@ -29,6 +29,7 @@ const handler: Handler = async (req, res) => {
     return send(res, 405, { message: "Método no permitido." });
   }
   if (!getAuthUser(req)) return send(res, 401, { message: "No autorizado." });
+  if (!isAdminUser(req)) return send(res, 403, { message: "Solo el administrador." });
   const token = process.env.BLOB_READ_WRITE_TOKEN || "";
   if (!token) return send(res, 501, { message: "Storage no configurado." });
 

@@ -1,9 +1,11 @@
 using System.Security.Claims;
 using DigitalGaming.Application.DTOs;
 using DigitalGaming.Core.Interfaces;
+using DigitalGaming.Infrastructure.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 
 namespace DigitalGaming.Api.Controllers;
 
@@ -84,6 +86,25 @@ public sealed class AuthController(IAuthService auth) : ControllerBase
         var username = User.FindFirstValue(ClaimTypes.Name) ?? User.FindFirstValue("unique_name");
         var role = User.FindFirstValue(ClaimTypes.Role);
         return Ok(new { username, role });
+    }
+
+    /// <summary>
+    /// Tells whether the logged-in user is the configured admin.
+    /// </summary>
+    /// <param name="options">The admin settings.</param>
+    /// <returns>Whether the current user may enter admin mode.</returns>
+    [HttpGet("admin-status")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public ActionResult<object> AdminStatus([FromServices] IOptions<AdminOptions> options)
+    {
+        var username = User.FindFirstValue(ClaimTypes.Name);
+        var configured = options?.Value?.Username;
+        var isAdmin = !string.IsNullOrWhiteSpace(username)
+            && !string.IsNullOrWhiteSpace(configured)
+            && string.Equals(username.Trim(), configured.Trim(), StringComparison.OrdinalIgnoreCase);
+        return Ok(new { username, isAdmin });
     }
 
     /// <summary>

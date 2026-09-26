@@ -253,6 +253,8 @@ export function setupAdmin(deps: AdminDeps): {
     } catch (e) {
       if (e instanceof Error && e.message === "NO_AUTH") {
         formError.textContent = "Necesitas entrar con tu cuenta para guardar. Usa el botón Entrar de arriba.";
+      } else if (e instanceof Error && e.message === "FORBIDDEN") {
+        formError.textContent = "Solo la cuenta administradora puede guardar.";
       } else if (e instanceof Error && e.message !== "" && !e.message.startsWith("API ")) {
         formError.textContent = e.message;
       } else {
@@ -298,6 +300,8 @@ export function setupAdmin(deps: AdminDeps): {
         } catch (e) {
           if (e instanceof Error && e.message === "NO_AUTH") {
             window.alert("Entra con tu cuenta (botón Entrar arriba) para eliminar productos.");
+          } else if (e instanceof Error && e.message === "FORBIDDEN") {
+            window.alert("Solo la cuenta administradora puede eliminar productos.");
           }
         }
       });

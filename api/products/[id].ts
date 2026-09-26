@@ -1,7 +1,7 @@
 // PUT /api/products/:id · DELETE /api/products/:id (requieren login)
 import { del } from "@vercel/blob";
 import { getPool } from "../_db.js";
-import { categoryToInt, categoryToName, getAuthUser, send } from "../_auth.js";
+import { categoryToInt, categoryToName, getAuthUser, isAdminUser, send } from "../_auth.js";
 import type { DbRow, Handler } from "../_types.js";
 
 /** Borra el blob viejo sin romper nada si no es blob o falla. */
@@ -30,6 +30,7 @@ function mapRow(r: DbRow): Record<string, unknown> {
 
 const handler: Handler = async (req, res) => {
   if (!getAuthUser(req)) return send(res, 401, { message: "No autorizado." });
+  if (!isAdminUser(req)) return send(res, 403, { message: "Solo el administrador." });
   const pool = getPool();
   const id = req.query.id;
 

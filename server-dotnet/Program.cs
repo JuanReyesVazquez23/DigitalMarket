@@ -7,6 +7,7 @@ using DigitalGaming.Infrastructure.Persistence;
 using DigitalGaming.Infrastructure.Repositories;
 using DigitalGaming.Infrastructure.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
@@ -40,6 +41,9 @@ builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
 // --- JWT settings (strongly-typed). En producción usa variable de entorno Jwt__Key. ---
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 var jwt = builder.Configuration.GetSection("Jwt").Get<JwtOptions>() ?? new JwtOptions();
+
+// --- Admin único: el username permitido vive en Admin:Username (env Admin__Username). ---
+builder.Services.Configure<AdminOptions>(builder.Configuration.GetSection("Admin"));
 if (string.IsNullOrWhiteSpace(jwt.Key) || jwt.Key.Length < 32)
 {
     throw new InvalidOperationException("Falta configurar Jwt:Key (mínimo 32 caracteres). Revisa appsettings.json o la env Jwt__Key.");
@@ -102,7 +106,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ClockSkew = TimeSpan.FromMinutes(1),
         };
     });
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(o =>
+{
+    o.AddPolicy("AdminUser", p => p.RequireAuthenticatedUser().AddRequirements(new AdminUserRequirement()));
+});
+builder.Services.AddSingleton<IAuthorizationHandler, AdminUserHandler>();
 
 var app = builder.Build();
 

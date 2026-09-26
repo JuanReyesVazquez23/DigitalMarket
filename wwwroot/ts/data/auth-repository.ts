@@ -62,3 +62,19 @@ export async function logoutRemote(refreshToken: string): Promise<void> {
     /* salir local siempre funciona aunque falle la red */
   }
 }
+
+/** Pregunta al servidor si la sesión actual es la del admin configurado. */
+export async function adminStatus(): Promise<{ username: string; isAdmin: boolean }> {
+  const s = getSession();
+  if (!s) throw new Error("NO_AUTH");
+  const res = await fetch(`${API}/admin-status`, {
+    headers: { Authorization: `Bearer ${s.accessToken}` },
+  });
+  if (res.status === 401) throw new Error("NO_AUTH");
+  if (!res.ok) throw new Error("No se pudo verificar.");
+  const data = await res.json();
+  return {
+    username: String(data.username ?? data.Username ?? ""),
+    isAdmin: Boolean(data.isAdmin ?? data.IsAdmin ?? false),
+  };
+}

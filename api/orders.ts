@@ -3,7 +3,7 @@
 // crea pedido y descuenta inventario. Agrupa líneas duplicadas (anti-oversell).
 import crypto from "node:crypto";
 import { getPool } from "./_db.js";
-import { getAuthUser, send } from "./_auth.js";
+import { getAuthUser, isAdminUser, send } from "./_auth.js";
 import type { DbRow, Handler } from "./_types.js";
 
 interface OrderLine {
@@ -32,7 +32,7 @@ const handler: Handler = async (req, res) => {
   if (req.method === "GET") {
     const admin = getAuthUser(req);
     if (!admin) return send(res, 401, { message: "No autorizado." });
-    if (admin.role !== "admin") return send(res, 403, { message: "Solo administradores." });
+    if (!isAdminUser(req)) return send(res, 403, { message: "Solo el administrador." });
     const pool = getPool();
     const { rows: orders } = await pool.query(
       `SELECT "Id","UserId","Username","Total","ShippingZone","ShippingCost","CreatedAtUtc" FROM "Orders" ORDER BY "CreatedAtUtc" DESC`

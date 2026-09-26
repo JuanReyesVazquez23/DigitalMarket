@@ -30,6 +30,7 @@ function writeLocal(items: Product[]): void {
 export async function fetchProducts(): Promise<Product[]> {
   try {
     const res = await fetch(API_ALL);
+    if (res.status === 403) throw new Error("FORBIDDEN");
     if (!res.ok) throw new Error(`API ${res.status}`);
     const data = (await res.json()) as Product[];
     // Normaliza C# (PascalCase) -> TS (camelCase) por si el backend serializa así.
@@ -70,6 +71,7 @@ export async function fetchPage(q: PageQuery): Promise<PagedResult<Product>> {
 
   try {
     const res = await fetch(`${API}?${params.toString()}`);
+    if (res.status === 403) throw new Error("FORBIDDEN");
     if (!res.ok) throw new Error(`API ${res.status}`);
     const data = await res.json();
     const items = ((data.items ?? data.Items ?? []) as Product[]).map(normalize);
@@ -117,6 +119,7 @@ export async function createProduct(dto: CreateProductDto): Promise<SaveResult> 
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(dto),
     });
+    if (res.status === 403) throw new Error("FORBIDDEN");
     if (!res.ok) throw new Error(`API ${res.status}`);
     const created = normalize(await res.json());
     writeLocal([created, ...readLocal()]);
@@ -137,6 +140,7 @@ export async function updateProduct(id: string, dto: CreateProductDto): Promise<
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(dto),
     });
+    if (res.status === 403) throw new Error("FORBIDDEN");
     if (!res.ok) throw new Error(`API ${res.status}`);
     const updated = normalize(await res.json());
     writeLocal(readLocal().map((p) => (p.id === id ? updated : p)));
@@ -195,3 +199,4 @@ function mapCategory(raw: unknown): string {
   if (Number.isInteger(asNum) && names[asNum] !== undefined) return names[asNum];
   return s;
 }
+

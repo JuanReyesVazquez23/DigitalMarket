@@ -63,7 +63,7 @@ public sealed class ProductsController(IProductService service) : ControllerBase
     /// <param name="ct">The cancellation token.</param>
     /// <returns>The created product.</returns>
     [HttpPost]
-    [Authorize]
+    [Authorize(Policy = "AdminUser")]
     [ProducesResponseType(typeof(Product), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -85,7 +85,7 @@ public sealed class ProductsController(IProductService service) : ControllerBase
     /// <param name="ct">The cancellation token.</param>
     /// <returns>No content if deleted; otherwise, not found.</returns>
     [HttpDelete("{id:guid}")]
-    [Authorize]
+    [Authorize(Policy = "AdminUser")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -103,7 +103,7 @@ public sealed class ProductsController(IProductService service) : ControllerBase
     /// <param name="ct">The cancellation token.</param>
     /// <returns>The updated product; otherwise, not found or bad request.</returns>
     [HttpPut("{id:guid}")]
-    [Authorize]
+    [Authorize(Policy = "AdminUser")]
     [ProducesResponseType(typeof(Product), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -119,3 +119,4 @@ public sealed class ProductsController(IProductService service) : ControllerBase
         return updated is null ? NotFound() : Ok(updated);
     }
 }
+

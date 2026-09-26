@@ -112,6 +112,17 @@ export function send(res: VercelRes, status: number, obj: unknown): unknown {
   return res.status(status).json(obj);
 }
 
+/** Nombre del único admin, desde env ADMIN_USERNAME (default "admin" local). */
+export function adminUsername(): string {
+  return (process.env.ADMIN_USERNAME || "admin").trim().toLowerCase();
+}
+
+/** True si el Bearer es del usuario admin configurado. */
+export function isAdminUser(req: VercelReq): boolean {
+  const u = getAuthUser(req);
+  return !!u && u.username.trim().toLowerCase() === adminUsername();
+}
+
 /** Lee JSON del body (Vercel ya lo parsea; fallback manual). */
 export async function readBody(req: VercelReq): Promise<Record<string, unknown>> {
   if (req.body !== undefined) return req.body as Record<string, unknown>;

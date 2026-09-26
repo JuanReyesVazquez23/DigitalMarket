@@ -1,6 +1,7 @@
 // Layer: ts/app — composición (entry point). Une domain/data/services/ui.
 import { fetchPage, fetchProducts } from "./data/product-repository.js";
 import { adminOrders } from "./data/order-repository.js";
+import { adminStatus } from "./data/auth-repository.js";
 import { addToCart, getCart } from "./services/cart-store.js";
 import { getSession } from "./services/session-store.js";
 import { renderStore } from "./ui/store-renderer.js";
@@ -86,11 +87,41 @@ const admin = setupAdmin({
 });
 
 const tapLock = setupTapUnlock(brandTitle, tapHint, () => {
-  admin.setUnlocked(true);
-  void refreshAdmin();
-  // Lleva al panel para que la salida sea descubrible.
-  adminPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  void unlockAdmin();
 });
+
+// El modo admin exige la cuenta administradora configurada en el servidor.
+let unlocking = false;
+async function unlockAdmin(): Promise<void> {
+  if (unlocking) return;
+  const session = getSession();
+  if (!session) {
+    auth.openAuth("login", "El modo admin es solo para la cuenta administradora. Entra con ella.");
+    tapLock.lock(); // resetea los toques para reintentar limpio tras entrar
+    return;
+  }
+  unlocking = true;
+  tapHint.textContent = "Verificando…";
+  try {
+    const st = await adminStatus();
+    if (!st.isAdmin) {
+      tapHint.textContent = "";
+      toast("Tu cuenta no tiene acceso al modo admin.");
+      tapLock.lock(); // resetea los toques para reintentar limpio
+      return;
+    }
+    tapHint.textContent = "";
+    admin.setUnlocked(true);
+    await refreshAdmin();
+    // Lleva al panel para que la salida sea descubrible.
+    adminPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch {
+    tapHint.textContent = "";
+    toast("No se pudo verificar. Revisa tu conexión e intenta de nuevo.");
+  } finally {
+    unlocking = false;
+  }
+}
 
 filters.addEventListener("click", (e) => {
   const btn = (e.target as HTMLElement).closest("[data-cat]") as HTMLElement | null;
